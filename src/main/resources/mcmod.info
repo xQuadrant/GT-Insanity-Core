@@ -1,0 +1,16 @@
+[
+{
+  "modid": "GTInsanityCore",
+  "name": "GT:Insanity Core",
+  "description": "Core mod of GT:Insanity modpack",
+  "version": "1.0",
+  "mcversion": "1.12.2",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["xQuadrant"],
+  "credits": "The Forge and FML guys, for making this example",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
