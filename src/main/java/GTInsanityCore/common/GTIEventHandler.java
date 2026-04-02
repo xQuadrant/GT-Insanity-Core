@@ -3,6 +3,7 @@ package GTInsanityCore.common;
 import GTInsanityCore.GTInsanityCore;
 import GTInsanityCore.common.blocks.GTIBlocks;
 import GTInsanityCore.common.interaction.FallingBlockInteractionManager;
+import GTInsanityCore.common.items.GTIItems;
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.item.Item;
@@ -26,6 +27,8 @@ public class GTIEventHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerItem(RegistryEvent.Register<Item> event){
+        GTIItems.init(); // Initialize items
+        GTIItems.registerItemBlocks(event.getRegistry());
         GTIBlocks.registerItemBlocks(event.getRegistry());
     }
 

@@ -1,37 +1,63 @@
 package GTInsanityCore.API.unification.flags;
 
-import gregtech.api.unification.material.flags.MaterialFlag;
+import gregtech.api.unification.material.info.MaterialFlag;
 
-public class InsanityMaterialFlags {
+public final class MaterialFlags {
 
-    // Particle physics flags
-    public static MaterialFlag FLAG_COLOR_CONFINEMENT;
-    public static MaterialFlag FLAG_WEAK_DECAY;
-    public static MaterialFlag FLAG_REQUIRES_CONTAINMENT;
-    public static MaterialFlag FLAG_INSTABLE_HALFLIFE;
-    public static MaterialFlag FLAG_META_STABLE;
-
-    // Standard GTCEu flags we need to reference
-    public static MaterialFlag GENERATE_PLASMA;
-    public static MaterialFlag GENERATE_INGOT;
-    public static MaterialFlag GENERATE_DUST;
-    public static MaterialFlag GENERATE_GAS;
-    public static MaterialFlag DISABLE_DECOMPOSITION;
-
-    public static void init() {
-        // Register custom flags
-        FLAG_COLOR_CONFINEMENT = new MaterialFlag("color_confinement");
-        FLAG_WEAK_DECAY = new MaterialFlag("weak_decay");
-        FLAG_REQUIRES_CONTAINMENT = new MaterialFlag("requires_containment");
-        FLAG_INSTABLE_HALFLIFE = new MaterialFlag("instable_halflife");
-        FLAG_META_STABLE = new MaterialFlag("meta_stable");
-
-        // Reference existing GTCEu flags (or create if they don't exist)
-        // These are already in GTCEu, just reference them
-        GENERATE_PLASMA = MaterialFlag.getByName("generate_plasma");
-        GENERATE_INGOT = MaterialFlag.getByName("generate_ingot");
-        GENERATE_DUST = MaterialFlag.getByName("generate_dust");
-        GENERATE_GAS = MaterialFlag.getByName("generate_gas");
-        DISABLE_DECOMPOSITION = MaterialFlag.getByName("disable_decomposition");
+    private MaterialFlags() {
     }
+
+    // Particle category flags
+    public static final MaterialFlag PARTICLE = new MaterialFlag.Builder("particle").build();
+    public static final MaterialFlag QUARK = new MaterialFlag.Builder("quark")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag LEPTON = new MaterialFlag.Builder("lepton")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag GAUGE_BOSON = new MaterialFlag.Builder("gauge_boson")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag SCALAR_BOSON = new MaterialFlag.Builder("scalar_boson")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag ANTIMATTER = new MaterialFlag.Builder("antimatter")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag NEUTRINO = new MaterialFlag.Builder("neutrino")
+            .requireFlags(LEPTON)
+            .build();
+
+    // Particle behavior flags
+    public static final MaterialFlag COLOR_CONFINEMENT = new MaterialFlag.Builder("color_confinement")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag WEAK_DECAY = new MaterialFlag.Builder("weak_decay")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag REQUIRES_CONTAINMENT = new MaterialFlag.Builder("requires_containment")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag INSTABLE_HALFLIFE = new MaterialFlag.Builder("instable_halflife")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag META_STABLE = new MaterialFlag.Builder("meta_stable")
+            .requireFlags(PARTICLE)
+            .build();
+
+    // Particle material generation/state flags
+    public static final MaterialFlag GENERATE_PLASMA = new MaterialFlag.Builder("generate_plasma")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag GENERATE_INGOT = new MaterialFlag.Builder("generate_ingot")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag GENERATE_DUST = new MaterialFlag.Builder("generate_dust")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag GENERATE_GAS = new MaterialFlag.Builder("generate_gas")
+            .requireFlags(PARTICLE)
+            .build();
+    public static final MaterialFlag DISABLE_DECOMPOSITION =
+            gregtech.api.unification.material.info.MaterialFlags.DISABLE_DECOMPOSITION;
 }

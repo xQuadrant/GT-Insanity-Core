@@ -5,6 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+
     }
 }
         
@@ -14,8 +15,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = '1.0'
-group = 'com.yourname.modid' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'modid'
+group = 'com.xQuadrant.GTInsanityCore' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'GTInsanityCore'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -60,6 +61,9 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2864'
+
+    implementation fg.deobf(files("libs/CodeChickenLib-1.12.2-3.2.3.358-universal.jar"))
+    implementation fg.deobf(files("libs/gregtech-1.12.2-2.8.10-beta.jar"))
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
