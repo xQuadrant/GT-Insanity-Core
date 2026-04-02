@@ -3,8 +3,10 @@ package GTInsanityCore;
 import GTInsanityCore.API.unification.GTIMaterials;
 import GTInsanityCore.common.GTIEventHandler;
 import GTInsanityCore.API.interaction.IFallingBlockInteraction;
+import GTInsanityCore.client.GTICreativeTabs;
 import GTInsanityCore.common.interaction.FallingBlockInteractionManager;
 import GTInsanityCore.common.items.GTIItems;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -21,6 +23,7 @@ public class GTInsanityCore
     @Mod.Instance(GTInsanityCore.MODID)
     public static GTInsanityCore instance;
     public static Logger logger;
+    public static CreativeTabs TAB_INSANITY;
 
     private static FallingBlockInteractionManager interactionManager;
     @Mod.EventHandler
@@ -29,6 +32,9 @@ public class GTInsanityCore
         logger = event.getModLog();
         GTIMaterials.init();
         logger.info("GTInsanityCore materials registered.");
+        GTICreativeTabs.init();
+        TAB_INSANITY = GTICreativeTabs.TAB_INSANITY;
+        logger.info("GTInsanityCore creative tabs registered.");
         GTIItems.init();
         logger.info("GTInsanityCore items registered.");
         logger.info("GTInsanityCore preInit complete.");

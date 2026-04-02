@@ -1,12 +1,14 @@
 package GTInsanityCore.API.unification.materials;
 
 import GTInsanityCore.GTInsanityCore;
+import gregtech.api.GregTechAPI;
 import gregtech.api.unification.material.registry.MaterialRegistry;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Central registry for all GTInsanityCore materials.
@@ -113,7 +115,7 @@ public class InsanityMaterialRegistry {
     public static Collection<IParticleMaterial> getParticles() {
         return MATERIALS.values().stream()
                 .filter(IParticleMaterial::isParticle)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -122,7 +124,7 @@ public class InsanityMaterialRegistry {
     public static Collection<IParticleMaterial> getQuarks() {
         return MATERIALS.values().stream()
                 .filter(IParticleMaterial::isQuark)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -131,7 +133,7 @@ public class InsanityMaterialRegistry {
     public static Collection<IParticleMaterial> getLeptons() {
         return MATERIALS.values().stream()
                 .filter(IParticleMaterial::isLepton)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
@@ -139,8 +141,12 @@ public class InsanityMaterialRegistry {
      */
     public static void validateIDs() {
         for (int id = INSANITY_ID_START; id < nextId; id++) {
+            final int materialId = id;
             gregtech.api.unification.material.Material gtMat =
-                    gregtech.api.unification.material.MaterialRegistry.getMaterialById(id);
+                    GregTechAPI.materialManager.getRegisteredMaterials().stream()
+                            .filter(material -> material.getId() == materialId)
+                            .findFirst()
+                            .orElse(null);
             if (gtMat != null) {
                 GTInsanityCore.logger.error("ID CONFLICT: GTCEu material occupies ID " + id +
                         " (" + gtMat.getName() + ")");
