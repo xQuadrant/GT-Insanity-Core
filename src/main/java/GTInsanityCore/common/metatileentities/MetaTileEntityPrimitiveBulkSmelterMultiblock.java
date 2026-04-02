@@ -63,28 +63,30 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
     @Override
     protected BlockPattern createStructurePattern() {
         return FactoryBlockPattern.start()
-                .aisle("CCC", "CCC", "CCC")
-                .aisle("XXX", "XSX", "XXX")
-                .aisle("XXX", "XXX", "XXX")
+                .aisle("CCC", "TOT", "TTT")
+                .aisle("CCC", "T#I", "TTT")
+                .aisle("CCC", "TSI", "TTT")
                 .where('S', selfPredicate())
                 .where('C', states(getCokeBrickState()))
-                .where('X', states(getTerracottaState())
-                        .or(metaTileEntities(MetaTileEntities.ITEM_IMPORT_BUS[0]).setExactLimit(2).setPreviewCount(2))
-                        .or(metaTileEntities(MetaTileEntities.ITEM_EXPORT_BUS[0]).setExactLimit(1).setPreviewCount(1)))
+                .where('T', states(getTerracottaState()).setMinGlobalLimited(14))
+                .where('I', abilities(MultiblockAbility.IMPORT_ITEMS).setExactLimit(2).setPreviewCount(2))
+                .where('O', abilities(MultiblockAbility.EXPORT_ITEMS).setExactLimit(1).setPreviewCount(1))
+                .where('#', air())
                 .build();
     }
 
     @Override
     public List<MultiblockShapeInfo> getMatchingShapes() {
         return Collections.singletonList(MultiblockShapeInfo.builder()
-                .aisle("CCC", "CCC", "CCC")
-                .aisle("IXI", "XSX", "XXX")
-                .aisle("XXX", "XOX", "XXX")
+                .aisle("CCC", "TOT", "TTT")
+                .aisle("CCC", "T#I", "TTT")
+                .aisle("CCC", "TSI", "TTT")
                 .where('S', this, EnumFacing.NORTH)
                 .where('C', getCokeBrickState())
-                .where('X', getTerracottaState())
+                .where('T', getTerracottaState())
                 .where('I', MetaTileEntities.ITEM_IMPORT_BUS[0], EnumFacing.WEST)
-                .where('O', MetaTileEntities.ITEM_EXPORT_BUS[0], EnumFacing.EAST)
+                .where('O', MetaTileEntities.ITEM_EXPORT_BUS[0], EnumFacing.NORTH)
+                .where('#', net.minecraft.init.Blocks.AIR.getDefaultState())
                 .build());
     }
 

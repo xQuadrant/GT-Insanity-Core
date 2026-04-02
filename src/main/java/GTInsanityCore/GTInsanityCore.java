@@ -33,7 +33,6 @@ public class GTInsanityCore
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
-        GTIBlocks.init();
         GTIBlocks.registerTileEntities();
         GTIRecipeMaps.init();
         GTIMetaTileEntities.init();
