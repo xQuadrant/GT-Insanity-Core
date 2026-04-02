@@ -1,9 +1,13 @@
 package GTInsanityCore.common;
 
+import GTInsanityCore.API.unification.GTIMaterials;
 import GTInsanityCore.GTInsanityCore;
 import GTInsanityCore.common.blocks.GTIBlocks;
 import GTInsanityCore.common.interaction.FallingBlockInteractionManager;
 import GTInsanityCore.common.items.GTIItems;
+import gregtech.api.GregTechAPI;
+import gregtech.api.unification.material.event.MaterialEvent;
+import gregtech.api.unification.material.event.MaterialRegistryEvent;
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.item.Item;
@@ -18,6 +22,16 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 @Mod.EventBusSubscriber(modid = GTInsanityCore.MODID)
 public class GTIEventHandler {
     private static final FallingBlockInteractionManager interactionManager = FallingBlockInteractionManager.getInstance();
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void registerMaterialRegistry(MaterialRegistryEvent event) {
+        GregTechAPI.materialManager.createRegistry(GTInsanityCore.MODID);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void registerMaterials(MaterialEvent event) {
+        GTIMaterials.init();
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerBlock(RegistryEvent.Register<Block> event){

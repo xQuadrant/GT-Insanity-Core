@@ -2,7 +2,6 @@ package GTInsanityCore.common.items;
 
 import GTInsanityCore.GTInsanityCore;
 import net.minecraft.item.Item;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
 public class GTIItems {
@@ -13,20 +12,22 @@ public class GTIItems {
     //public static ItemResearchToken RESEARCH_TOKEN;
 
     public static void init() {
-        PLASMA_CONTAINER = registerItem("plasma_container", new ItemPlasmaContainer());
-        //STRATA_ITEM = registerItem("strata", new ItemStrata());
-        //RESEARCH_TOKEN = registerItem("research_token", new ItemResearchToken());
+        if (PLASMA_CONTAINER == null) {
+            PLASMA_CONTAINER = createItem("plasma_container", new ItemPlasmaContainer());
+        }
+        //STRATA_ITEM = createItem("strata", new ItemStrata());
+        //RESEARCH_TOKEN = createItem("research_token", new ItemResearchToken());
     }
 
-    private static <T extends Item> T registerItem(String name, T item) {
+    private static <T extends Item> T createItem(String name, T item) {
         item.setRegistryName(GTInsanityCore.MODID, name);
         item.setUnlocalizedName(GTInsanityCore.MODID + "." + name);
         item.setCreativeTab(GTInsanityCore.TAB_INSANITY); // Create this creative tab!
-        GameRegistry.findRegistry(Item.class).register(item);
         return item;
     }
 
     public static void registerItemBlocks(IForgeRegistry<Item> registry) {
-        // If you have item-blocks to register
+        init();
+        registry.register(PLASMA_CONTAINER);
     }
 }

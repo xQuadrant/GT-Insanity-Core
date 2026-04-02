@@ -2,7 +2,10 @@ package GTInsanityCore.API.unification.materials;
 
 import GTInsanityCore.GTInsanityCore;
 import gregtech.api.GregTechAPI;
+import gregtech.api.unification.material.registry.IMaterialRegistryManager;
 import gregtech.api.unification.material.registry.MaterialRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -15,6 +18,8 @@ import java.util.stream.Collectors;
  * Bridges GTCEu materials and standalone InsanityCore materials.
  */
 public class InsanityMaterialRegistry {
+
+    private static final Logger LOGGER = LogManager.getLogger(GTInsanityCore.MODID + "/Materials");
 
     private static final Map<String, IParticleMaterial> MATERIALS = new HashMap<>();
     private static final Map<Integer, IParticleMaterial> ID_TO_MATERIAL = new HashMap<>();
@@ -32,19 +37,19 @@ public class InsanityMaterialRegistry {
         int id = material.getId();
 
         if (MATERIALS.containsKey(name)) {
-            GTInsanityCore.logger.error("Duplicate material registration: " + name);
+            LOGGER.error("Duplicate material registration: {}", name);
             return MATERIALS.get(name);
         }
 
         if (ID_TO_MATERIAL.containsKey(id)) {
-            GTInsanityCore.logger.error("Duplicate material ID: " + id + " for " + name);
+            LOGGER.error("Duplicate material ID: {} for {}", id, name);
             return ID_TO_MATERIAL.get(id);
         }
 
         MATERIALS.put(name, material);
         ID_TO_MATERIAL.put(id, material);
 
-        GTInsanityCore.logger.info("Registered InsanityMaterial: " + name + " (ID: " + id + ")");
+        LOGGER.info("Registered InsanityMaterial: {} (ID: {})", name, id);
         return material;
     }
 
@@ -140,6 +145,11 @@ public class InsanityMaterialRegistry {
      * Validate no ID conflicts with GTCEu
      */
     public static void validateIDs() {
+        IMaterialRegistryManager.Phase phase = GregTechAPI.materialManager.getPhase();
+        if (phase != IMaterialRegistryManager.Phase.FROZEN &&
+                phase != IMaterialRegistryManager.Phase.CLOSED) {
+            return;
+        }
         for (int id = INSANITY_ID_START; id < nextId; id++) {
             final int materialId = id;
             gregtech.api.unification.material.Material gtMat =
@@ -148,8 +158,7 @@ public class InsanityMaterialRegistry {
                             .findFirst()
                             .orElse(null);
             if (gtMat != null) {
-                GTInsanityCore.logger.error("ID CONFLICT: GTCEu material occupies ID " + id +
-                        " (" + gtMat.getName() + ")");
+                LOGGER.error("ID CONFLICT: GTCEu material occupies ID {} ({})", id, gtMat.getName());
             }
         }
     }

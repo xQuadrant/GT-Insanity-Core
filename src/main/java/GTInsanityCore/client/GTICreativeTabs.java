@@ -18,7 +18,8 @@ public class GTICreativeTabs {
         TAB_INSANITY = new CreativeTabs(GTInsanityCore.MODID + ".particles") {
             @Override
             public ItemStack getTabIconItem() {
-                return ItemPlasmaContainer.createContainer(GTIMaterials.HiggsBoson, 1000);
+                ItemStack icon = ItemPlasmaContainer.createContainer(GTIMaterials.HiggsBoson, 1000);
+                return icon.isEmpty() ? ItemPlasmaContainer.createEmpty() : icon;
             }
 
             @Override
@@ -51,7 +52,10 @@ public class GTICreativeTabs {
 
     private static void addIfPresent(NonNullList<ItemStack> items, IParticleMaterial material) {
         if (material != null) {
-            items.add(ItemPlasmaContainer.createContainer(material, 1000));
+            ItemStack stack = ItemPlasmaContainer.createContainer(material, 1000);
+            if (!stack.isEmpty()) {
+                items.add(stack);
+            }
         }
     }
 }
