@@ -31,6 +31,10 @@ import java.util.List;
 
 public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBase implements IControllable {
 
+    private static final String[] BACK_SLICE = {"XXX", "XXX", "XXX"};
+    private static final String[] MIDDLE_SLICE = {"XXX", "X#X", "XXX"};
+    private static final String[] FRONT_SLICE = {"XXX", "XSX", "XXX"};
+
     private static final String NBT_WORKING_ENABLED = "WorkingEnabled";
     private static final String NBT_ACTIVE = "Active";
     private static final String NBT_PROGRESS = "Progress";
@@ -58,17 +62,17 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     @Override
     protected BlockPattern createStructurePattern() {
         return FactoryBlockPattern.start()
-                .aisle("HHH", "HOH", "HHH")
-                .aisle("HHH", "H#L", "HHH")
-                .aisle("HHH", "HSE", "HHH")
+                .aisle(BACK_SLICE)
+                .aisle(MIDDLE_SLICE)
+                .aisle(FRONT_SLICE)
                 .where('S', selfPredicate())
-                .where('H', states(getHighEnergyCasingState()).setMinGlobalLimited(23))
-                .where('E', abilities(gregtech.api.metatileentity.multiblock.MultiblockAbility.INPUT_ENERGY)
-                        .setMinGlobalLimited(1).setPreviewCount(1))
-                .where('L', abilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)
-                        .setMinGlobalLimited(1).setPreviewCount(1))
-                .where('O', abilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)
-                        .setMinGlobalLimited(1).setPreviewCount(1))
+                .where('X', states(getHighEnergyCasingState()).setMinGlobalLimited(20)
+                        .or(abilities(MultiblockAbility.INPUT_ENERGY)
+                                .setMinGlobalLimited(1).setMaxGlobalLimited(1).setPreviewCount(1))
+                        .or(abilities(MultiblockAbility.MAINTENANCE_HATCH)
+                                .setExactLimit(1).setPreviewCount(1))
+                        .or(abilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)
+                                .setMinGlobalLimited(1).setMaxGlobalLimited(3).setPreviewCount(3)))
                 .where('#', air())
                 .build();
     }
@@ -81,17 +85,9 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
             if (hatch == null || MetaTileEntities.ENERGY_INPUT_HATCH[tier] == null) {
                 continue;
             }
-            shapes.add(MultiblockShapeInfo.builder()
-                    .aisle("HHH", "HOH", "HHH")
-                    .aisle("HHH", "H#L", "HHH")
-                    .aisle("HHH", "HSE", "HHH")
-                    .where('S', this, EnumFacing.NORTH)
-                    .where('H', getHighEnergyCasingState())
-                    .where('E', MetaTileEntities.ENERGY_INPUT_HATCH[tier], EnumFacing.EAST)
-                    .where('L', hatch, EnumFacing.EAST)
-                    .where('O', hatch, EnumFacing.NORTH)
-                    .where('#', net.minecraft.init.Blocks.AIR.getDefaultState())
-                    .build());
+            shapes.add(createMatchingShape(hatch, MetaTileEntities.ENERGY_INPUT_HATCH[tier], 1));
+            shapes.add(createMatchingShape(hatch, MetaTileEntities.ENERGY_INPUT_HATCH[tier], 2));
+            shapes.add(createMatchingShape(hatch, MetaTileEntities.ENERGY_INPUT_HATCH[tier], 3));
         }
         return shapes;
     }
@@ -145,7 +141,8 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
                     lines.add(new TextComponentString("Operating Tier: " + GTValues.VNF[operatingTier]));
                     lines.add(new TextComponentString("Efficiency: " + efficiency + "%"));
                     lines.add(new TextComponentString("EU -> LU: " + lastEUConsumed + " EU/t -> " + lastLUProduced + " LU/t"));
-                    lines.add(new TextComponentString("Stored LU: " + getStoredLaserUnits() + " / " + getLaserCapacity()));
+                    lines.add(new TextComponentString("Laser Output Capacity: " + getLaserCapacity() + " LU/t"));
+                    lines.add(new TextComponentString("Laser Hatches: " + getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU).size()));
                     lines.add(new TextComponentString("Progress: " + progress + "/" + MAX_PROGRESS));
                     lines.add(new TextComponentString("Completed Cycles: " + completedCycles));
                 });
@@ -215,17 +212,13 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     }
 
     private long getStoredLaserUnits() {
-        long total = 0L;
-        for (ILaserUnitContainer container : getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)) {
-            total += container.getStoredLaserUnits();
-        }
-        return total;
+        return 0L;
     }
 
     private long getLaserCapacity() {
         long total = 0L;
         for (ILaserUnitContainer container : getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)) {
-            total += container.getLaserUnitCapacity();
+            total += container.getMaxLaserTransfer();
         }
         return total;
     }
@@ -265,7 +258,7 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
 
         long totalLaserSpace = 0L;
         for (ILaserUnitContainer container : laserOutputs) {
-            totalLaserSpace += Math.max(0L, container.getLaserUnitCapacity() - container.getStoredLaserUnits());
+            totalLaserSpace += Math.max(0L, container.getMaxLaserTransfer() - container.getTransferredThisTick());
         }
 
         int operatingTier = getOperatingTier();
@@ -320,6 +313,25 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     private static IBlockState getHighEnergyCasingState() {
         Block block = Block.getBlockFromName("gregtech:computer_casing");
         return block == null ? net.minecraft.init.Blocks.IRON_BLOCK.getDefaultState() : block.getStateFromMeta(2);
+    }
+
+    private MultiblockShapeInfo createMatchingShape(MetaTileEntityGTILaserOutputHatch hatch,
+                                                    MetaTileEntity energyHatch, int outputCount) {
+        String frontTop = outputCount >= 2 ? "XOX" : "XMX";
+        String frontMiddle = outputCount >= 1 ? "ESO" : "ESX";
+        String frontBottom = outputCount >= 3 ? "XOX" : "XXX";
+
+        return MultiblockShapeInfo.builder()
+                .aisle(BACK_SLICE)
+                .aisle(MIDDLE_SLICE)
+                .aisle(frontTop, frontMiddle, frontBottom)
+                .where('S', this, EnumFacing.NORTH)
+                .where('X', getHighEnergyCasingState())
+                .where('#', net.minecraft.init.Blocks.AIR.getDefaultState())
+                .where('E', energyHatch, EnumFacing.NORTH)
+                .where('M', MetaTileEntities.MAINTENANCE_HATCH, EnumFacing.NORTH)
+                .where('O', hatch, EnumFacing.NORTH)
+                .build();
     }
 
     private static final class ConversionState {

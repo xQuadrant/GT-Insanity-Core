@@ -2,6 +2,7 @@ package GTInsanityCore.common.metatileentities;
 
 import GTInsanityCore.GTInsanityCore;
 import gregtech.api.GTValues;
+import gregtech.api.metatileentity.multiblock.MultiblockAbility;
 import gregtech.common.metatileentities.MetaTileEntities;
 import net.minecraft.util.ResourceLocation;
 
@@ -46,6 +47,9 @@ public final class GTIMetaTileEntities {
                     new MetaTileEntityGTILaserOutputHatch(
                             new ResourceLocation(GTInsanityCore.MODID, "laser_output_hatch." + tierName),
                             tier));
+            MultiblockAbility.registerMultiblockAbility(
+                    GTIMultiblockAbilities.LASER_OUTPUT_LU,
+                    LASER_OUTPUT_HATCHES[tier]);
         }
 
         LASER_CONVERSION_ARRAY = MetaTileEntities.registerMetaTileEntity(

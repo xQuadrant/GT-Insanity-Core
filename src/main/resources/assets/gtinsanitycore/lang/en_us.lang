@@ -51,6 +51,9 @@ gtinsanitycore.machine.laser_output_hatch.uev.name=Epic Laser Output Hatch II
 gtinsanitycore.machine.laser_output_hatch.uiv.name=Epic Laser Output Hatch III
 gtinsanitycore.machine.laser_output_hatch.uxv.name=Epic Laser Output Hatch IV
 gtinsanitycore.machine.laser_output_hatch.opv.name=Legendary Laser Output Hatch
+gtinsanitycore.machine.laser_output_hatch.tooltip1=Transfering lasers from distance.
+gtinsanitycore.machine.laser_output_hatch.tooltip2=§cLaser Beams must be transmitted in a straight line.
+gtinsanitycore.machine.laser_output_hatch.tooltip3=§aOutputs up to: §f%s LU/t
 
 gtinsanitycore.material.up_quark=Up Quark
 gtinsanitycore.material.down_quark=Down Quark

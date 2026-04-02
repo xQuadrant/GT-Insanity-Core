@@ -12,5 +12,7 @@ public interface ILaserUnitContainer {
 
     long getMaxLaserTransfer();
 
+    long getTransferredThisTick();
+
     int getLaserTier();
 }

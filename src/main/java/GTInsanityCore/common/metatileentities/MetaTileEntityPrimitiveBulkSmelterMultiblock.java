@@ -38,6 +38,10 @@ import java.util.List;
 
 public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWithDisplayBase implements IControllable {
 
+    private static final String[] BACK_SLICE = {"XXX", "XXX", "CCC"};
+    private static final String[] MIDDLE_SLICE = {"XXX", "X#X", "CCC"};
+    private static final String[] FRONT_SLICE = {"XXX", "XSX", "CCC"};
+
     private static final String NBT_WORKING_ENABLED = "WorkingEnabled";
     private static final String NBT_ACTIVE = "Active";
     private static final String NBT_PROGRESS = "Progress";
@@ -63,14 +67,14 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
     @Override
     protected BlockPattern createStructurePattern() {
         return FactoryBlockPattern.start()
-                .aisle("CCC", "TOT", "TTT")
-                .aisle("CCC", "T#I", "TTT")
-                .aisle("CCC", "TSI", "TTT")
+                .aisle(BACK_SLICE)
+                .aisle(MIDDLE_SLICE)
+                .aisle(FRONT_SLICE)
                 .where('S', selfPredicate())
-                .where('C', states(getCokeBrickState()))
-                .where('T', states(getTerracottaState()).setMinGlobalLimited(14))
-                .where('I', abilities(MultiblockAbility.IMPORT_ITEMS).setExactLimit(2).setPreviewCount(2))
-                .where('O', abilities(MultiblockAbility.EXPORT_ITEMS).setExactLimit(1).setPreviewCount(1))
+                .where('C', states(getCokeBrickState()).setMinGlobalLimited(9))
+                .where('X', states(getTerracottaState()).setMinGlobalLimited(11)
+                        .or(abilities(MultiblockAbility.IMPORT_ITEMS).setExactLimit(2).setPreviewCount(2))
+                        .or(abilities(MultiblockAbility.EXPORT_ITEMS).setExactLimit(1).setPreviewCount(1)))
                 .where('#', air())
                 .build();
     }
@@ -78,15 +82,15 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
     @Override
     public List<MultiblockShapeInfo> getMatchingShapes() {
         return Collections.singletonList(MultiblockShapeInfo.builder()
-                .aisle("CCC", "TOT", "TTT")
-                .aisle("CCC", "T#I", "TTT")
-                .aisle("CCC", "TSI", "TTT")
+                .aisle(BACK_SLICE)
+                .aisle(MIDDLE_SLICE)
+                .aisle("XOX", "ISI", "CCC")
                 .where('S', this, EnumFacing.NORTH)
                 .where('C', getCokeBrickState())
-                .where('T', getTerracottaState())
-                .where('I', MetaTileEntities.ITEM_IMPORT_BUS[0], EnumFacing.WEST)
-                .where('O', MetaTileEntities.ITEM_EXPORT_BUS[0], EnumFacing.NORTH)
+                .where('X', getTerracottaState())
                 .where('#', net.minecraft.init.Blocks.AIR.getDefaultState())
+                .where('I', MetaTileEntities.ITEM_IMPORT_BUS[0], EnumFacing.NORTH)
+                .where('O', MetaTileEntities.ITEM_EXPORT_BUS[0], EnumFacing.NORTH)
                 .build());
     }
 
@@ -161,12 +165,12 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
 
     @Override
     public ICubeRenderer getBaseTexture(gregtech.api.metatileentity.multiblock.IMultiblockPart sourcePart) {
-        return Textures.COKE_BRICKS;
+        return Textures.PRIMITIVE_BRICKS;
     }
 
     @Override
     protected ICubeRenderer getFrontOverlay() {
-        return Textures.MULTI_FURNACE_OVERLAY;
+        return Textures.COKE_OVEN_OVERLAY;
     }
 
     @Override
