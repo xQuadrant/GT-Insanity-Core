@@ -68,9 +68,54 @@ gtinsanitycore.machine.laser_output_hatch.uev.name=Laser Output Hatch Epica II
 gtinsanitycore.machine.laser_output_hatch.uiv.name=Laser Output Hatch Epica III
 gtinsanitycore.machine.laser_output_hatch.uxv.name=Laser Output Hatch Epica IV
 gtinsanitycore.machine.laser_output_hatch.opv.name=Laser Output Hatch Lendaria
-gtinsanitycore.machine.laser_output_hatch.tooltip1=Transfering lasers from distance.
-gtinsanitycore.machine.laser_output_hatch.tooltip2=§cLaser Beams must be transmitted in a straight line.
-gtinsanitycore.machine.laser_output_hatch.tooltip3=§aOutputs up to: §f%s LU/t
+gtinsanitycore.machine.laser_output_hatch.tooltip1=Transferindo lasers a distancia.
+gtinsanitycore.machine.laser_output_hatch.tooltip2=§cFeixes Laser devem ser transmitidos em linha reta.
+gtinsanitycore.machine.laser_output_hatch.tooltip3=§aSaida ate: §f%s LU/t
+
+gtinsanitycore.machine.naquadah_reactor.luv.name=Reator de Naquadah I
+gtinsanitycore.machine.naquadah_reactor.luv.tooltip=Gerador de alta eficiencia consumindo combustivel de naquadah
+gtinsanitycore.machine.naquadah_reactor.zpm.name=Reator de Naquadah II
+gtinsanitycore.machine.naquadah_reactor.zpm.tooltip=Gerador de alta eficiencia consumindo combustivel de naquadah
+gtinsanitycore.machine.naquadah_reactor.uv.name=Reator de Naquadah III
+gtinsanitycore.machine.naquadah_reactor.uv.tooltip=Gerador de alta eficiencia consumindo combustivel de naquadah
+gtinsanitycore.machine.naquadah_reactor.uhv.name=Reator de Naquadah IV
+gtinsanitycore.machine.naquadah_reactor.uhv.tooltip=Gerador de alta eficiencia consumindo combustivel de naquadah
+
+gtinsanitycore.machine.mob_simulator.lv.name=Simulador de Mobs I
+gtinsanitycore.machine.mob_simulator.lv.tooltip=Simula drops de mobs a partir de essencia
+gtinsanitycore.machine.mob_simulator.mv.name=Simulador de Mobs II
+gtinsanitycore.machine.mob_simulator.mv.tooltip=Simula drops de mobs a partir de essencia
+gtinsanitycore.machine.mob_simulator.hv.name=Simulador de Mobs III
+gtinsanitycore.machine.mob_simulator.hv.tooltip=Simula drops de mobs a partir de essencia
+
+gtinsanitycore.machine.rtg.ev.name=RTG I
+gtinsanitycore.machine.rtg.ev.tooltip=Geracao de energia passiva a partir de radioisotopos
+gtinsanitycore.machine.rtg.iv.name=RTG II
+gtinsanitycore.machine.rtg.iv.tooltip=Geracao de energia passiva a partir de radioisotopos
+gtinsanitycore.machine.rtg.luv.name=RTG III
+gtinsanitycore.machine.rtg.luv.tooltip=Geracao de energia passiva a partir de radioisotopos
+gtinsanitycore.machine.rtg.zpm.name=RTG IV
+gtinsanitycore.machine.rtg.zpm.tooltip=Geracao de energia passiva a partir de radioisotopos
+gtinsanitycore.machine.rtg.uv.name=RTG V
+gtinsanitycore.machine.rtg.uv.tooltip=Geracao de energia passiva a partir de radioisotopos
+
+gtinsanitycore.machine.vacuum_chamber.ulv.name=Camara de Vacuo I
+gtinsanitycore.machine.vacuum_chamber.ulv.tooltip=Processa materiais sob vacuo
+gtinsanitycore.machine.vacuum_chamber.lv.name=Camara de Vacuo II
+gtinsanitycore.machine.vacuum_chamber.lv.tooltip=Processa materiais sob vacuo
+gtinsanitycore.machine.vacuum_chamber.mv.name=Camara de Vacuo III
+gtinsanitycore.machine.vacuum_chamber.mv.tooltip=Processa materiais sob vacuo
+gtinsanitycore.machine.vacuum_chamber.hv.name=Camara de Vacuo IV
+gtinsanitycore.machine.vacuum_chamber.hv.tooltip=Processa materiais sob vacuo
+
+gtinsanitycore.machine.fluidized_bed_reactor.lv.name=Reator de Leito Fluidizado I
+gtinsanitycore.machine.fluidized_bed_reactor.lv.tooltip=Reator quimico com leito fluidizado
+gtinsanitycore.machine.fluidized_bed_reactor.mv.name=Reator de Leito Fluidizado II
+gtinsanitycore.machine.fluidized_bed_reactor.mv.tooltip=Reator quimico com leito fluidizado
+gtinsanitycore.machine.fluidized_bed_reactor.hv.name=Reator de Leito Fluidizado III
+gtinsanitycore.machine.fluidized_bed_reactor.hv.tooltip=Reator quimico com leito fluidizado
+gtinsanitycore.machine.fluidized_bed_reactor.iv.name=Reator de Leito Fluidizado IV
+gtinsanitycore.machine.fluidized_bed_reactor.iv.tooltip=Reator quimico com leito fluidizado
 
 gtinsanitycore.material.up_quark=Quark Up
 gtinsanitycore.material.down_quark=Quark Down
@@ -96,6 +141,12 @@ gtinsanitycore.material.higgs_boson=Boson de Higgs
 gtinsanitycore.material.positron=Positron
 gtinsanitycore.material.anti_up_quark=Anti-Quark Up
 gtinsanitycore.material.anti_down_quark=Anti-Quark Down
+
+gtinsanitycore.fluid.sea_water=Agua do Mar
+gtinsanitycore.fluid.contaminated_sea_water=Agua do Mar Contaminada
+gtinsanitycore.fluid.contaminated_water=Agua Contaminada
+gtinsanitycore.fluid.superheated_steam=Vapor Superaquecido
+gtinsanitycore.fluid.supercritical_steam=Vapor Supercritico
 
 gtinsanitycore.plasma_container.empty=Contenedor de plasma vazio
 gtinsanitycore.plasma_container.empty.hint=Preencha com um plasma de particula suportado

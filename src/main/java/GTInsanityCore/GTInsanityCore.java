@@ -9,6 +9,7 @@ import GTInsanityCore.common.interaction.FallingBlockInteractionManager;
 import GTInsanityCore.common.items.GTIItems;
 import GTInsanityCore.common.metatileentities.GTIMetaTileEntities;
 import GTInsanityCore.common.recipes.GTIRecipeMaps;
+import GTInsanityCore.common.recipes.GTILaserConversionRecipes;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -35,6 +36,7 @@ public class GTInsanityCore
         logger = event.getModLog();
         GTIBlocks.registerTileEntities();
         GTIRecipeMaps.init();
+        GTILaserConversionRecipes.init();
         GTIMetaTileEntities.init();
         GTICreativeTabs.init();
         TAB_INSANITY = GTICreativeTabs.TAB_INSANITY;

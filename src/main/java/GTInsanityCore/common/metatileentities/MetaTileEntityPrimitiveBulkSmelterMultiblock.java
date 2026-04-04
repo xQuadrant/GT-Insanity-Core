@@ -4,6 +4,7 @@ import gregtech.api.capability.GregtechTileCapabilities;
 import gregtech.api.capability.IControllable;
 import gregtech.api.gui.GuiTextures;
 import gregtech.api.gui.ModularUI;
+import gregtech.api.gui.widgets.AdvancedTextWidget;
 import gregtech.api.gui.widgets.LabelWidget;
 import gregtech.api.gui.widgets.ProgressWidget;
 import gregtech.api.gui.widgets.SlotWidget;
@@ -28,6 +29,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
@@ -37,10 +39,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWithDisplayBase implements IControllable {
-
-    private static final String[] BACK_SLICE = {"XXX", "XXX", "CCC"};
-    private static final String[] MIDDLE_SLICE = {"XXX", "X#X", "CCC"};
-    private static final String[] FRONT_SLICE = {"XXX", "XSX", "CCC"};
 
     private static final String NBT_WORKING_ENABLED = "WorkingEnabled";
     private static final String NBT_ACTIVE = "Active";
@@ -67,14 +65,14 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
     @Override
     protected BlockPattern createStructurePattern() {
         return FactoryBlockPattern.start()
-                .aisle(BACK_SLICE)
-                .aisle(MIDDLE_SLICE)
-                .aisle(FRONT_SLICE)
+                .aisle("XXX", "XXX", "CCC")
+                .aisle("XXX", "X#X", "CCC")
+                .aisle("XXX", "XSX", "CCC")
                 .where('S', selfPredicate())
                 .where('C', states(getCokeBrickState()).setMinGlobalLimited(9))
                 .where('X', states(getTerracottaState()).setMinGlobalLimited(11)
-                        .or(abilities(MultiblockAbility.IMPORT_ITEMS).setExactLimit(2).setPreviewCount(2))
-                        .or(abilities(MultiblockAbility.EXPORT_ITEMS).setExactLimit(1).setPreviewCount(1)))
+                        .or(abilities(MultiblockAbility.IMPORT_ITEMS).setMaxGlobalLimited(2).setPreviewCount(2))
+                        .or(abilities(MultiblockAbility.EXPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1)))
                 .where('#', air())
                 .build();
     }
@@ -82,8 +80,8 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
     @Override
     public List<MultiblockShapeInfo> getMatchingShapes() {
         return Collections.singletonList(MultiblockShapeInfo.builder()
-                .aisle(BACK_SLICE)
-                .aisle(MIDDLE_SLICE)
+                .aisle("XXX", "XXX", "CCC")
+                .aisle("XXX", "X#X", "CCC")
                 .aisle("XOX", "ISI", "CCC")
                 .where('S', this, EnumFacing.NORTH)
                 .where('C', getCokeBrickState())
@@ -138,6 +136,11 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
         MultiblockDisplayText.builder(textList, isStructureFormed())
                 .setWorkingStatus(active, workingEnabled)
                 .addCustom(lines -> {
+                    if (!isStructureFormed()) {
+                        lines.add(new TextComponentString("§cStructure not formed!"));
+                        return;
+                    }
+                    lines.add(new TextComponentString("§aStructure Formed"));
                     lines.add(new TextComponentString("Progress: " + progress + "/" + MAX_PROGRESS));
                     lines.add(new TextComponentString("Completed Cycles: " + completedCycles));
                     ItemStack currentInput = displayInventory.getStackInSlot(0);
@@ -153,13 +156,20 @@ public class MetaTileEntityPrimitiveBulkSmelterMultiblock extends MultiblockWith
         return ModularUI.builder(GuiTextures.PRIMITIVE_BACKGROUND, 176, 166)
                 .shouldColor(false)
                 .widget(new LabelWidget(10, 8, "gtinsanitycore.machine.primitive_bulk_smelter.name"))
-                .widget(new SlotWidget(displayInventory, 0, 52, 35, false, false)
+                .widget(new AdvancedTextWidget(10, 20, list -> {
+                    if (isStructureFormed()) {
+                        list.add(new TextComponentString("§a[Structure Formed]"));
+                    } else {
+                        list.add(new TextComponentString("§c[Structure NOT Formed]"));
+                    }
+                }, 0))
+                .widget(new SlotWidget(displayInventory, 0, 52, 40, false, false)
                         .setBackgroundTexture(GuiTextures.PRIMITIVE_SLOT, GuiTextures.PRIMITIVE_FURNACE_OVERLAY))
-                .widget(new ProgressWidget(this::getProgressPercent, 79, 34, 20, 15,
+                .widget(new ProgressWidget(this::getProgressPercent, 79, 39, 20, 15,
                         GuiTextures.PROGRESS_BAR_ARROW, ProgressWidget.MoveType.HORIZONTAL))
-                .widget(new SlotWidget(displayInventory, 1, 107, 35, false, false)
+                .widget(new SlotWidget(displayInventory, 1, 107, 40, false, false)
                         .setBackgroundTexture(GuiTextures.PRIMITIVE_SLOT, GuiTextures.PRIMITIVE_INGOT_OVERLAY))
-                .dynamicLabel(52, 58, this::getCurrentItemName, 0x404040)
+                .dynamicLabel(52, 63, this::getCurrentItemName, 0x404040)
                 .bindPlayerInventory(player.inventory, GuiTextures.PRIMITIVE_SLOT, 0);
     }
 

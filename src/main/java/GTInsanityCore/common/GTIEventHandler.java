@@ -1,5 +1,6 @@
 package GTInsanityCore.common;
 
+import GTInsanityCore.API.unification.GTIFluids;
 import GTInsanityCore.API.unification.GTIMaterials;
 import GTInsanityCore.GTInsanityCore;
 import GTInsanityCore.common.blocks.GTIBlocks;
@@ -31,6 +32,7 @@ public class GTIEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerMaterials(MaterialEvent event) {
         GTIMaterials.init();
+        GTIFluids.init();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)

@@ -1,6 +1,7 @@
 package GTInsanityCore.common.metatileentities;
 
 import GTInsanityCore.API.capability.ILaserUnitContainer;
+import GTInsanityCore.common.recipes.GTILaserConversionRecipes;
 import gregtech.api.GTValues;
 import gregtech.api.capability.GregtechTileCapabilities;
 import gregtech.api.capability.IControllable;
@@ -13,7 +14,6 @@ import gregtech.api.metatileentity.multiblock.MultiblockWithDisplayBase;
 import gregtech.api.pattern.BlockPattern;
 import gregtech.api.pattern.FactoryBlockPattern;
 import gregtech.api.pattern.MultiblockShapeInfo;
-import gregtech.api.util.GTUtility;
 import gregtech.client.renderer.ICubeRenderer;
 import gregtech.client.renderer.texture.Textures;
 import gregtech.common.metatileentities.MetaTileEntities;
@@ -31,9 +31,7 @@ import java.util.List;
 
 public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBase implements IControllable {
 
-    private static final String[] BACK_SLICE = {"XXX", "XXX", "XXX"};
-    private static final String[] MIDDLE_SLICE = {"XXX", "X#X", "XXX"};
-    private static final String[] FRONT_SLICE = {"XXX", "XSX", "XXX"};
+    private static final int MAX_PROGRESS = 20; // 1 segundo = 20 ticks
 
     private static final String NBT_WORKING_ENABLED = "WorkingEnabled";
     private static final String NBT_ACTIVE = "Active";
@@ -41,7 +39,6 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     private static final String NBT_COMPLETED_CYCLES = "CompletedCycles";
     private static final String NBT_LAST_EU_CONSUMED = "LastEUConsumed";
     private static final String NBT_LAST_LU_PRODUCED = "LastLUProduced";
-    private static final int MAX_PROGRESS = 100;
 
     private boolean workingEnabled = true;
     private boolean active = false;
@@ -49,6 +46,9 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     private int completedCycles = 0;
     private long lastEUConsumed = 0L;
     private long lastLUProduced = 0L;
+
+    private int operatingTier = GTValues.LV;
+    private GTILaserConversionRecipes.LaserConversionData conversionData = null;
 
     public MetaTileEntityLaserConversionArray(ResourceLocation metaTileEntityId) {
         super(metaTileEntityId);
@@ -62,9 +62,9 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     @Override
     protected BlockPattern createStructurePattern() {
         return FactoryBlockPattern.start()
-                .aisle(BACK_SLICE)
-                .aisle(MIDDLE_SLICE)
-                .aisle(FRONT_SLICE)
+                .aisle("XXX", "XXX", "XXX")
+                .aisle("XXX", "X#X", "XXX")
+                .aisle("XXX", "XSX", "XXX")
                 .where('S', selfPredicate())
                 .where('X', states(getHighEnergyCasingState()).setMinGlobalLimited(20)
                         .or(abilities(MultiblockAbility.INPUT_ENERGY)
@@ -101,22 +101,75 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
             return;
         }
 
-        ConversionState state = performConversion(false);
-        if (state.producedLU <= 0L) {
+        // Atualizar operating tier e dados de conversao
+        operatingTier = getOperatingTier();
+        conversionData = GTILaserConversionRecipes.getConversionData(operatingTier);
+
+        if (conversionData == null) {
             active = false;
             resetProgress();
             clearLastTransfer();
             return;
         }
 
+        // Verificar se ha energia suficiente
+        List<IEnergyContainer> energyInputs = getAbilities(MultiblockAbility.INPUT_ENERGY);
+        if (energyInputs.isEmpty()) {
+            active = false;
+            resetProgress();
+            clearLastTransfer();
+            return;
+        }
+
+        long euRequired = conversionData.euPerTick;
+        long totalStoredEU = 0L;
+        for (IEnergyContainer container : energyInputs) {
+            totalStoredEU += Math.max(0L, container.getEnergyStored());
+        }
+
+        if (totalStoredEU < euRequired) {
+            // Nao ha energia suficiente
+            if (progress > 0) {
+                // Regredir progresso
+                progress = Math.max(0, progress - 1);
+            }
+            active = false;
+            return;
+        }
+
+        // Consumir energia
+        long euConsumed = 0L;
+        long euRemaining = euRequired;
+        for (IEnergyContainer container : energyInputs) {
+            if (euRemaining <= 0L) break;
+            long canDrain = Math.min(euRemaining, container.getEnergyStored());
+            long drained = container.removeEnergy(canDrain);
+            euRemaining -= drained;
+            euConsumed += drained;
+        }
+
+        if (euConsumed < euRequired) {
+            // Nao conseguiu consumir toda energia necessaria
+            active = false;
+            if (progress > 0) {
+                progress = Math.max(0, progress - 1);
+            }
+            return;
+        }
+
+        // Avancar progresso
         active = true;
-        lastEUConsumed = state.consumedEU;
-        lastLUProduced = state.producedLU;
         progress++;
+
         if (progress >= MAX_PROGRESS) {
+            // Ciclo completado - produzir LU
+            long luProduced = produceLaserUnits();
+            lastEUConsumed = euRequired * MAX_PROGRESS;
+            lastLUProduced = luProduced;
             progress = 0;
             completedCycles++;
         }
+
         markDirty();
     }
 
@@ -126,12 +179,12 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
         active = false;
         resetProgress();
         clearLastTransfer();
+        conversionData = null;
     }
 
     @Override
     protected void addDisplayText(List<ITextComponent> textList) {
-        int operatingTier = getOperatingTier();
-        int efficiency = getEfficiencyForTier(operatingTier);
+        int efficiency = conversionData != null ? conversionData.efficiencyPercent : 0;
         MultiblockDisplayText.builder(textList, isStructureFormed())
                 .setWorkingStatus(active, workingEnabled)
                 .addCustom(lines -> {
@@ -140,7 +193,8 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
                     }
                     lines.add(new TextComponentString("Operating Tier: " + GTValues.VNF[operatingTier]));
                     lines.add(new TextComponentString("Efficiency: " + efficiency + "%"));
-                    lines.add(new TextComponentString("EU -> LU: " + lastEUConsumed + " EU/t -> " + lastLUProduced + " LU/t"));
+                    lines.add(new TextComponentString("EU/t Required: " + (conversionData != null ? conversionData.euPerTick : 0)));
+                    lines.add(new TextComponentString("EU -> LU: " + lastEUConsumed + " EU -> " + lastLUProduced + " LU"));
                     lines.add(new TextComponentString("Laser Output Capacity: " + getLaserCapacity() + " LU/t"));
                     lines.add(new TextComponentString("Laser Hatches: " + getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU).size()));
                     lines.add(new TextComponentString("Progress: " + progress + "/" + MAX_PROGRESS));
@@ -211,10 +265,6 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
         return new String[] {"gtinsanitycore.machine.laser_conversion_array.tooltip"};
     }
 
-    private long getStoredLaserUnits() {
-        return 0L;
-    }
-
     private long getLaserCapacity() {
         long total = 0L;
         for (ILaserUnitContainer container : getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)) {
@@ -226,73 +276,55 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
     private int getOperatingTier() {
         int tier = GTValues.LV;
         boolean foundAny = false;
+
+        // Determinar tier baseado no energy hatch
         for (IEnergyContainer container : getAbilities(MultiblockAbility.INPUT_ENERGY)) {
-            tier = foundAny ? Math.min(tier, GTUtility.getTierByVoltage(container.getInputVoltage()))
-                    : GTUtility.getTierByVoltage(container.getInputVoltage());
+            int hatchTier = gregtech.api.util.GTUtility.getTierByVoltage(container.getInputVoltage());
+            tier = foundAny ? Math.min(tier, hatchTier) : hatchTier;
             foundAny = true;
         }
+
+        // Limitar pelo tier do laser output hatch
         for (ILaserUnitContainer container : getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU)) {
             tier = foundAny ? Math.min(tier, container.getLaserTier()) : container.getLaserTier();
             foundAny = true;
         }
+
         return foundAny ? tier : GTValues.LV;
     }
 
-    private int getEfficiencyForTier(int tier) {
-        return Math.max(1, 100 - ((tier - GTValues.LV) * 2));
-    }
+    /**
+     * Produz Laser Units nos output hatches baseado nos dados de conversao.
+     */
+    private long produceLaserUnits() {
+        if (conversionData == null) {
+            return 0L;
+        }
 
-    private ConversionState performConversion(boolean simulate) {
-        List<IEnergyContainer> energyInputs = getAbilities(MultiblockAbility.INPUT_ENERGY);
         List<ILaserUnitContainer> laserOutputs = getAbilities(GTIMultiblockAbilities.LASER_OUTPUT_LU);
-        if (energyInputs.isEmpty() || laserOutputs.isEmpty()) {
-            return ConversionState.EMPTY;
+        if (laserOutputs.isEmpty()) {
+            return 0L;
         }
 
-        long totalStoredEU = 0L;
-        long totalEUPerTick = 0L;
-        for (IEnergyContainer container : energyInputs) {
-            totalStoredEU += Math.max(0L, container.getEnergyStored());
-            totalEUPerTick += Math.max(0L, container.getInputVoltage() * Math.max(1L, container.getInputAmperage()));
+        long luToProduce = conversionData.luPerCycle;
+        if (luToProduce <= 0L) {
+            return 0L;
         }
 
-        long totalLaserSpace = 0L;
-        for (ILaserUnitContainer container : laserOutputs) {
-            totalLaserSpace += Math.max(0L, container.getMaxLaserTransfer() - container.getTransferredThisTick());
-        }
+        // Distribuir LU entre os output hatches
+        long totalProduced = 0L;
+        long remainingLU = luToProduce;
 
-        int operatingTier = getOperatingTier();
-        int efficiency = getEfficiencyForTier(operatingTier);
-        long euToConsume = Math.min(totalStoredEU, totalEUPerTick);
-        euToConsume = Math.min(euToConsume, (totalLaserSpace * 100L) / efficiency);
-        long luToProduce = (euToConsume * efficiency) / 100L;
-
-        if (euToConsume <= 0L || luToProduce <= 0L) {
-            return ConversionState.EMPTY;
-        }
-
-        long remainingEU = euToConsume;
-        for (IEnergyContainer container : energyInputs) {
-            if (remainingEU <= 0L) {
-                break;
-            }
-            long drained = container.removeEnergy(remainingEU);
-            remainingEU -= drained;
-        }
-
-        long actualEUConsumed = euToConsume - remainingEU;
-        long actualLUToProduce = (actualEUConsumed * efficiency) / 100L;
-        long remainingLU = actualLUToProduce;
         for (ILaserUnitContainer container : laserOutputs) {
             if (remainingLU <= 0L) {
                 break;
             }
             long inserted = container.addLaserUnits(remainingLU, false);
             remainingLU -= inserted;
+            totalProduced += inserted;
         }
 
-        long actualLUProduced = actualLUToProduce - remainingLU;
-        return new ConversionState(actualEUConsumed, actualLUProduced);
+        return totalProduced;
     }
 
     private void clearLastTransfer() {
@@ -322,8 +354,8 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
         String frontBottom = outputCount >= 3 ? "XOX" : "XXX";
 
         return MultiblockShapeInfo.builder()
-                .aisle(BACK_SLICE)
-                .aisle(MIDDLE_SLICE)
+                .aisle("XXX", "XXX", "XXX")
+                .aisle("XXX", "X#X", "XXX")
                 .aisle(frontTop, frontMiddle, frontBottom)
                 .where('S', this, EnumFacing.NORTH)
                 .where('X', getHighEnergyCasingState())
@@ -332,17 +364,5 @@ public class MetaTileEntityLaserConversionArray extends MultiblockWithDisplayBas
                 .where('M', MetaTileEntities.MAINTENANCE_HATCH, EnumFacing.NORTH)
                 .where('O', hatch, EnumFacing.NORTH)
                 .build();
-    }
-
-    private static final class ConversionState {
-        private static final ConversionState EMPTY = new ConversionState(0L, 0L);
-
-        private final long consumedEU;
-        private final long producedLU;
-
-        private ConversionState(long consumedEU, long producedLU) {
-            this.consumedEU = consumedEU;
-            this.producedLU = producedLU;
-        }
     }
 }
